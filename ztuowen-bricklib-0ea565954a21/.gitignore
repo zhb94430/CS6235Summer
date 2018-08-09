@@ -1,0 +1,15 @@
+# CLion stuff
+.idea
+cmake-build-*
+
+# Vim stuff
+*.swp
+
+# My CMake build
+build
+
+# Test artifacts
+*.o
+*.optrpt
+*.s
+brick-test
