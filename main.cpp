@@ -15,10 +15,16 @@
 #define plane  1024
 #define grid   32768
 
+// Cuda Prototypes
+__global__ void GSRBKernel(double* deviceInput, double* deviceOutput);
+
+// C Prototypes
 int GSRB(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
           float *dx, int color);
 int GSRBGenerated(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
                   float *dx, int color);
+int GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
+             double* beta_j, double* beta_k, double* lambda, int color);
 
 int main(int argc, char** argv)
 {
@@ -45,7 +51,7 @@ int main(int argc, char** argv)
     brick phi_newBricks(&binfo, 4, sizeof(float));
     brick inboxBricks(&binfo, 5, sizeof(float));
 
-    
+
 }
 
 int GSRB(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
@@ -695,6 +701,30 @@ int GSRBGenerated(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist
     }
     return 1;
 }
+
+int GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
+             double* beta_j, double* beta_k, double* lambda, int color)
+{
+    // Calculate Size
+
+    // Init Memory on GPU
+
+    // Perform cuda computation
+
+    // Copy Memory from GPU
+}
+
+// Cuda Stuff
+
+__global__ void GSRBKernel(double* deviceInput, double* deviceOutput)
+{
+    // i, j, k
+
+    
+
+
+}
+
 
 
 

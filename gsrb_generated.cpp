@@ -14,7 +14,7 @@
 
 #define H2INV  0.8f
 
-int naive_cns(struct ::brickd *phi, struct ::brickd *inbox, struct ::brickd *phi_new, struct ::brick_list &blist, float *dx, int color) {
+int naive_cns(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, float *dx, int color) {
   for (long o = 0; o < blist.len; ++o) {
     long b = blist.dat[o];
     long k;
