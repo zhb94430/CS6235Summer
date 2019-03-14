@@ -18,6 +18,9 @@
 #define plane  1024
 #define grid   32768
 
+#define DEFAULT_THRESHOLD  4000
+#define BLOCKSIZE 64
+#define TILESIZE 16
 #define cudaCheck(x) _cudaCheck(x, #x ,__FILE__, __LINE__)
 
 template<typename T>
@@ -104,11 +107,11 @@ int main(int argc, char** argv)
     // ------------   CPU Benchmark  ---------------
 
     InitBufferWithSize(grid * sizeof(double));
-    GSRB(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda, color);
+    GSRB(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda);
 
     // ------------   CUDA Benchmark  ---------------
     InitBufferWithSize(grid * sizeof(double));
-    GSRBCuda(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda, color);
+    GSRBCuda();
 
 
     // ------------   BRICKS Benchmark  ---------------
@@ -120,7 +123,7 @@ int main(int argc, char** argv)
 }
 
 void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
-          double *beta_i, double *beta_j, double *beta_k, double *lambda, int color) 
+          double *beta_i, double *beta_j, double *beta_k, double *lambda) 
 {
     int i, j, k, color;
     double h2inv = 1.0/64;
@@ -224,14 +227,13 @@ void GSRBCuda()
             maxGridSize,    maxBlockSize,    maxThreadCount,       sharedMemoryPerBlock);
 
     // Dimension
-    long numOfBlocks = (width*height) / (BLOCKSIZE * TILESIZE) + 1;
+    // TODO, need to figure out how many
+    long numOfBlocks = 50;
 
     dim3 dimGrid(numOfBlocks);
-    dim3 dimBlock(BLOCKSIZE);
+    dim3 dimBlock(numOfBlocks);
 
-    printf("Config: #ofBlocks %d, #ofThreads %d\n", numOfBlocks, BLOCKSIZE);
-    printf("Arguments: threshold %d, width %d, height %d, inputSize %d\n", threshold, width, height, inputSize);
-    printf("input address %p, output address %p\n", (void*)device_input, (void*)device_output);
+    printf("Config: #ofBlocks %d, #ofThreads %d\n", numOfBlocks, numOfBlocks);
 
     cudaEvent_t start, stop;
     float et;
