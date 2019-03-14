@@ -38,6 +38,13 @@ double* beta_j ;
 double* beta_k ;
 double* lambda ;
 
+// C Prototypes
+void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
+         double *beta_i, double *beta_j, double *beta_k, double *lambda, int color);
+// int GSRBGenerated(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
+//                   float *dx, int color);
+void GSRBCuda();
+
 // Helper functions
 void InitBufferWithSize(int size)
 {
@@ -68,16 +75,29 @@ void InitBufferWithSize(int size)
     }
 }
 
-// Cuda Prototypes
 __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
-                           double* beta_j, double* beta_k, double* lambda, int color);
+                           double* beta_j, double* beta_k, double* lambda, int color)
+{
+    // TODO: Find out what i, j, k maps to in terms of blockIdx, blockDim, threadIdx
+    // int currentOffset = blockIdx.x + blockDim.x + threadIdx.x;
+    
+    int ijk = i + j*pencil + k*plane;
 
-// C Prototypes
-int GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
-         double *beta_i, double *beta_j, double *beta_k, double *lambda, int color);
-// int GSRBGenerated(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
-//                   float *dx, int color);
-int GSRBCuda();
+    if (i+j+k+color % 2 == 0)
+    {
+        double helmholtz = alpha[ijk]*phi[ijk]
+                         - h2inv*(
+                               beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
+                             - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
+                             + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
+                             - beta_j[ijk       ]*( phi[ijk       ]-phi[ijk-pencil] )
+                             + beta_k[ijk+plane ]*( phi[ijk+plane ]-phi[ijk       ] )
+                             - beta_k[ijk       ]*( phi[ijk       ]-phi[ijk-plane ] )
+                              );
+
+        phi_new[ijk] = phi[ijk] - lambda[ijk]*(helmholtz-rhs[ijk]);
+    }
+}
 
 int main(int argc, char** argv)
 {
@@ -102,11 +122,36 @@ int main(int argc, char** argv)
 void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
           double *beta_i, double *beta_j, double *beta_k, double *lambda, int color) 
 {
-    int i, j, k;
+    int i, j, k, color;
     double h2inv = 1.0/64;
 
-    printf("GSRB Bench Starting..\n")
+    printf("GSRB Bench Starting..\n");
     clock_t start = clock();
+
+    color = 0;
+
+    for(k=0;k<pencil;k++){
+      for(j=0;j<pencil;j++){
+        for(i=0;i<pencil;i++){
+          int ijk = i + j*pencil + k*plane;
+          if(i+j+k+color % 2 == 0){ // color signifies red or black case
+            double helmholtz = alpha[ijk]*phi[ijk]
+                             - h2inv*(
+                                 beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
+                               - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
+                               + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
+                               - beta_j[ijk       ]*( phi[ijk       ]-phi[ijk-pencil] )
+                               + beta_k[ijk+plane ]*( phi[ijk+plane ]-phi[ijk       ] )
+                               - beta_k[ijk       ]*( phi[ijk       ]-phi[ijk-plane ] )
+                                  );
+
+            phi_new[ijk] = phi[ijk] - lambda[ijk]*(helmholtz-rhs[ijk]);
+          }
+        }
+      }
+    }
+
+    color = 1;
 
     for(k=0;k<pencil;k++){
       for(j=0;j<pencil;j++){
@@ -134,7 +179,7 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
     printf("CPU Time is %f\n", time_spent);
 }
 
-int GSRBCuda()
+void GSRBCuda()
 {
     //CUDA Buffers
     double* phi_device    ;
@@ -215,30 +260,6 @@ int GSRBCuda()
     cudaMemcpy(host_output, device_output, inputSize, cudaMemcpyDeviceToHost);
     cudaFree(device_output);
     cudaFree(device_input);
-}
-
-__global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
-                           double* beta_j, double* beta_k, double* lambda, int color)
-{
-    // TODO: Find out what i, j, k maps to in terms of blockIdx, blockDim, threadIdx
-    // int currentOffset = blockIdx.x + blockDim.x + threadIdx.x;
-    
-    int ijk = i + j*pencil + k*plane;
-
-    if (i+j+k+color % 2 == 0)
-    {
-        double helmholtz = alpha[ijk]*phi[ijk]
-                         - h2inv*(
-                               beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
-                             - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
-                             + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
-                             - beta_j[ijk       ]*( phi[ijk       ]-phi[ijk-pencil] )
-                             + beta_k[ijk+plane ]*( phi[ijk+plane ]-phi[ijk       ] )
-                             - beta_k[ijk       ]*( phi[ijk       ]-phi[ijk-plane ] )
-                              );
-
-        phi_new[ijk] = phi[ijk] - lambda[ijk]*(helmholtz-rhs[ijk]);
-    }
 }
 
 
