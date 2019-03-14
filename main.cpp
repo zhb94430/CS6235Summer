@@ -4,8 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "brick.h"
-#include "omp.h"
+#include "./bricklib/inc/brick.h"
 
 #define alpha 0
 #define beta_i  1

@@ -1,0 +1,3 @@
+[submodule "bricklib"]
+	path = bricklib
+	url = https://bitbucket.org/ztuowen/bricklib/
