@@ -261,9 +261,9 @@ void GSRBCuda()
     printf("Cuda Time is %f\n", et);
 
     // More Memory Management
-    // cudaMemcpy(host_output, device_output, inputSize, cudaMemcpyDeviceToHost);
-    // cudaFree(device_output);
-    // cudaFree(device_input);
+    cudaMemcpy(host_output, device_output, inputSize, cudaMemcpyDeviceToHost);
+    cudaFree(device_output);
+    cudaFree(device_input);
 }
 
 
