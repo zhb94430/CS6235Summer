@@ -1,4 +1,8 @@
+#include <stdio.h>
 #include <iostream>
+#include <time.h>
+#include <math.h>
+#include <stdlib.h>
 
 #include "brick.h"
 #include "omp.h"
@@ -25,6 +29,46 @@ void _cudaCheck(T e, const char* func, const char* call, const int line){
   }
 }
 
+// Buffers
+double* phi    ;
+double* phi_new;
+double* rhs    ;
+double* alpha  ;
+double* beta_i ;
+double* beta_j ;
+double* beta_k ;
+double* lambda ;
+
+// Helper functions
+void InitBufferWithSize(int size)
+{
+    phi     = (double*)malloc(size);
+    phi_new = (double*)malloc(size);
+    rhs     = (double*)malloc(size);
+    alpha   = (double*)malloc(size);
+    beta_i  = (double*)malloc(size);
+    beta_j  = (double*)malloc(size);
+    beta_k  = (double*)malloc(size);
+    lambda  = (double*)malloc(size);
+
+    double range_from = 0.0;
+    double range_to = 1.0;
+    std::default_random_engine generator((unsigned)clock());
+    std::uniform_real_distribution<double> distr(range_from, range_to);
+
+    for (int i = 0; i < size; ++i)
+    {
+        phi    [i] = distr(generator);
+        phi_new[i] = distr(generator);
+        rhs    [i] = distr(generator);
+        alpha  [i] = distr(generator);
+        beta_i [i] = distr(generator);
+        beta_j [i] = distr(generator);
+        beta_k [i] = distr(generator);
+        lambda [i] = distr(generator);
+    }
+}
+
 // Cuda Prototypes
 __global__ void GSRBKernel(double* deviceInput, double* deviceOutput);
 
@@ -38,38 +82,166 @@ int GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* b
 
 int main(int argc, char** argv)
 {
-    // Calculate Size
-    int matrixSize = grid * sizeof(double);
+    // ------------   CPU Benchmark  ---------------
 
-    // Init Buffers on local
-    double *phi    = (double *)malloc(matrixSize);
-    double *phi_new= (double *)malloc(matrixSize);
-    double *rhs    = (double *)malloc(matrixSize);
-    double *alpha  = (double *)malloc(matrixSize);
-    double *beta_i = (double *)malloc(matrixSize);
-    double *beta_j = (double *)malloc(matrixSize);
-    double *beta_k = (double *)malloc(matrixSize);
-    double *lambda = (double *)malloc(matrixSize);
+    InitBufferWithSize(grid * sizeof(double));
+    
+    printf("GSRB Bench Starting..\n")
+    clock_t start = clock();
+    
+    GSRB(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda, color);
+    
+    clock_t end = clock();
+    double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("CPU Time is %f\n", time_spent);
 
-    // Random Number, only works on Unix
-    int fd = open("/dev/random", O_RDONLY);
-    read(fd, phi, matrixSize);
-    read(fd, phi_new, matrixSize);
-    read(fd, rhs, matrixSize);
-    read(fd, alpha, matrixSize);
-    read(fd, beta_i, matrixSize);
-    read(fd, beta_j, matrixSize);
-    read(fd, beta_k, matrixSize);
-    read(fd, lambda, matrixSize);
 
-    // Benchmark Cuda
+    // ------------   CUDA Benchmark  ---------------
+    InitBufferWithSize(grid * sizeof(double));
+    
+    // Timing using cudaEvent
+    cudaEvent_t start, stop;
+    float et;
+    cudaCheck(cudaEventCreate(&start));
+    cudaCheck(cudaEventCreate(&stop));
+    cudaCheck(cudaEventRecord(start));
+
     GSRBCuda(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda, color);
+    
+    // Time event end
+    cudaCheck(cudaEventRecord(stop));
+    cudaCheck(cudaEventSynchronize(stop));
+    cudaCheck(cudaEventElapsedTime(&et, start, stop));
+    cudaCheck(cudaEventDestroy(start));
+    cudaCheck(cudaEventDestroy(stop));
 
-    // Benchmark Brick
+    printf("Cuda Time is %f\n", et);
+    
+
+    // ------------   BRICKS Benchmark  ---------------
+    InitBufferWithSize(grid * sizeof(double));
+    // Start Timer
+    // TODO: How to time bricks?
+
     GSRBBricks(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda, color);
+    // End Timer
 }
 
-int GSRB(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
+void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
+          double *beta_i, double *beta_j, double *beta_k, double *lambda, int color) 
+{
+    int i, j, k;
+    double h2inv = 1.0/64;
+    for(k=0;k<pencil;k++){
+      for(j=0;j<pencil;j++){
+        for(i=0;i<pencil;i++){
+          int ijk = i + j*pencil + k*plane;
+          if(i+j+k+color % 2 == 0){ // color signifies red or black case
+            double helmholtz = alpha[ijk]*phi[ijk]
+                              -h2inv*(
+                                  beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
+                                  -beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
+                                  +beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
+                                  -beta_j[ijk       ]*( phi[ijk       ]-phi[ijk-pencil] )
+                                  +beta_k[ijk+plane ]*( phi[ijk+plane ]-phi[ijk       ] )
+                                  -beta_k[ijk       ]*( phi[ijk       ]-phi[ijk-plane ] )
+                                  );
+
+            phi_new[ijk] = phi[ijk] - lambda[ijk]*(helmholtz-rhs[ijk]);
+          }
+        }
+      }
+    }
+}
+
+
+
+int GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
+             double* beta_j, double* beta_k, double* lambda, int color)
+{
+
+    // Init Memory on GPU
+    // Cuda Memory Management
+    cudaCheck(cudaMalloc((void**) &device_input, inputSize));
+    // cudaCheck(cudaGetLastError());
+    cudaCheck(cudaMalloc((void**) &device_output, inputSize));
+    // cudaCheck(cudaGetLastError());
+    cudaCheck(cudaMemcpy(device_input, host_input, inputSize, cudaMemcpyHostToDevice));
+    // cudaCheck(cudaGetLastError());
+    cudaCheck(cudaMemcpy(device_output, host_output, inputSize, cudaMemcpyHostToDevice));
+    // cudaCheck(cudaGetLastError());
+
+    /// Timer
+    // Timing using cudaEvent
+    cudaEvent_t start, stop;
+    float et;
+    cudaCheck(cudaEventCreate(&start));
+    cudaCheck(cudaEventCreate(&stop));
+
+    // Time event start
+    cudaCheck(cudaEventRecord(start));
+
+    struct cudaDeviceProp properties;
+    cudaGetDeviceProperties(&properties, 0);
+    int maxGridSize = properties.maxGridSize[0];
+    int maxBlockSize = properties.maxThreadsDim[0];
+    int maxThreadCount = properties.maxThreadsPerBlock;
+    size_t sharedMemoryPerBlock = properties.sharedMemPerBlock;
+    printf("MaxGridDim1 %d, MaxBlockDim1 %d, MaxThreadPerBlock %d, SharedMemPerBlock %d\n", 
+            maxGridSize,    maxBlockSize,    maxThreadCount,       sharedMemoryPerBlock);
+
+    // Dimension
+
+    // Baseline
+    // long numOfBlocks = (width*height) / BLOCKSIZE + 1;
+
+    // 
+    long numOfBlocks = (width*height) / (BLOCKSIZE * TILESIZE) + 1;
+
+    dim3 dimGrid(numOfBlocks);
+    dim3 dimBlock(BLOCKSIZE);
+
+    printf("Config: #ofBlocks %d, #ofThreads %d\n", numOfBlocks, BLOCKSIZE);
+    printf("Arguments: threshold %d, width %d, height %d, inputSize %d\n", threshold, width, height, inputSize);
+    printf("input address %p, output address %p\n", (void*)device_input, (void*)device_output);
+
+    // SobelKernel<<<dimGrid, dimBlock>>>(device_input, device_output, 
+    //                                    threshold, width, height, width*height);
+
+    // TiledSobelKernel<<<dimGrid, dimBlock>>>(device_input, device_output, 
+                                            // threshold, width, height, width*height);
+
+    cudaCheck(cudaGetLastError());
+    cudaDeviceSynchronize();
+    cudaCheck(cudaGetLastError());
+    // Time event end
+    cudaCheck(cudaEventRecord(stop));
+    cudaCheck(cudaEventSynchronize(stop));
+    cudaCheck(cudaEventElapsedTime(&et, start, stop));
+    cudaCheck(cudaEventDestroy(start));
+    cudaCheck(cudaEventDestroy(stop));
+
+    printf("\t%0.3f\n", et);
+
+    // More Memory Management
+    cudaMemcpy(host_output, device_output, inputSize, cudaMemcpyDeviceToHost);
+    cudaFree(device_output);
+    cudaFree(device_input);
+}
+
+// Cuda Stuff
+
+__global__ void GSRBKernel(double* deviceInput, double* deviceOutput)
+{
+    // i, j, k
+
+    
+
+
+}
+
+
+int GSRBBricks(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
           float *dx, int color)
 {
     for (long o = 0; o < blist.len; ++o) 
@@ -95,36 +267,12 @@ int GSRB(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist,
                              );
 
               phi_new[0].elem(b,k,j,i) = phi[0].elem(b,k,j,i) - inbox[lambda].elem(b,k,j,i) * (helmholtz-inbox[rhs].elem(b,k,j,i));
-    }}}}}
-
-
+            }
+          }
+        }
+      }
+    }
     return 1;
-}
-
-int GSRBBricks(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda, color)
-{
-    // Set up the Brick 
-    long n = std::stoi(argv[1]);
-    long RZ, RY, RX;
-    long BZ, BY, BX;
-    sscanf(argv[2], "%ld,%ld,%ld", &RZ, &RY, &RX);
-    sscanf(argv[3], "%ld,%ld,%ld", &BZ, &BY, &BX);
-    if (n % BDIM_X != 0 || n % BDIM_Y != 0 || n & BDIM_Z != 0)
-    {    std::cerr << "The size of the input dimension is not divisible by the size of the block" << std::endl; }
-    std::cout << "Benchmark running with " << n << " elements at each dimension for " TOSTRING(_EXAMPLE) << std::endl;
-    std::cout << "RZ " << RZ << ";RY " << RY << ";RX " << RX << std::endl;
-    std::cout << "BZ " << BZ << ";BY " << BY << ";BX " << BX << std::endl;
-    std::cout << "Running with " << omp_get_num_procs() << " procs" << std::endl;
-    
-    //  ---- Initialize data ----
-    // Brick info
-    brick_info binfo(BDIM_Z, BDIM_Y, BDIM_X);
-    // Create bricks according to the mapping
-    brick_list blist = binfo.genList(n / BDIM_Z + 2, n / BDIM_Y + 2, n / BDIM_X + 2, RZ, RY, RX, BZ, BY, BX);
-      
-    brick phiBricks(&binfo, 4, sizeof(float));
-    brick phi_newBricks(&binfo, 4, sizeof(float));
-    brick inboxBricks(&binfo, 5, sizeof(float));
 }
 
 int GSRBGenerated(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
@@ -742,92 +890,6 @@ int GSRBGenerated(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist
     }
     return 1;
 }
-
-int GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
-             double* beta_j, double* beta_k, double* lambda, int color)
-{
-
-    // Init Memory on GPU
-    // Cuda Memory Management
-    cudaCheck(cudaMalloc((void**) &device_input, inputSize));
-    // cudaCheck(cudaGetLastError());
-    cudaCheck(cudaMalloc((void**) &device_output, inputSize));
-    // cudaCheck(cudaGetLastError());
-    cudaCheck(cudaMemcpy(device_input, host_input, inputSize, cudaMemcpyHostToDevice));
-    // cudaCheck(cudaGetLastError());
-    cudaCheck(cudaMemcpy(device_output, host_output, inputSize, cudaMemcpyHostToDevice));
-    // cudaCheck(cudaGetLastError());
-
-    /// Timer
-    // Timing using cudaEvent
-    cudaEvent_t start, stop;
-    float et;
-    cudaCheck(cudaEventCreate(&start));
-    cudaCheck(cudaEventCreate(&stop));
-
-    // Time event start
-    cudaCheck(cudaEventRecord(start));
-
-    struct cudaDeviceProp properties;
-    cudaGetDeviceProperties(&properties, 0);
-    int maxGridSize = properties.maxGridSize[0];
-    int maxBlockSize = properties.maxThreadsDim[0];
-    int maxThreadCount = properties.maxThreadsPerBlock;
-    size_t sharedMemoryPerBlock = properties.sharedMemPerBlock;
-    printf("MaxGridDim1 %d, MaxBlockDim1 %d, MaxThreadPerBlock %d, SharedMemPerBlock %d\n", 
-            maxGridSize,    maxBlockSize,    maxThreadCount,       sharedMemoryPerBlock);
-
-    // Dimension
-
-    // Baseline
-    // long numOfBlocks = (width*height) / BLOCKSIZE + 1;
-
-    // 
-    long numOfBlocks = (width*height) / (BLOCKSIZE * TILESIZE) + 1;
-
-    dim3 dimGrid(numOfBlocks);
-    dim3 dimBlock(BLOCKSIZE);
-
-    printf("Config: #ofBlocks %d, #ofThreads %d\n", numOfBlocks, BLOCKSIZE);
-    printf("Arguments: threshold %d, width %d, height %d, inputSize %d\n", threshold, width, height, inputSize);
-    printf("input address %p, output address %p\n", (void*)device_input, (void*)device_output);
-
-    // SobelKernel<<<dimGrid, dimBlock>>>(device_input, device_output, 
-    //                                    threshold, width, height, width*height);
-
-    // TiledSobelKernel<<<dimGrid, dimBlock>>>(device_input, device_output, 
-                                            // threshold, width, height, width*height);
-
-    cudaCheck(cudaGetLastError());
-    cudaDeviceSynchronize();
-    cudaCheck(cudaGetLastError());
-    // Time event end
-    cudaCheck(cudaEventRecord(stop));
-    cudaCheck(cudaEventSynchronize(stop));
-    cudaCheck(cudaEventElapsedTime(&et, start, stop));
-    cudaCheck(cudaEventDestroy(start));
-    cudaCheck(cudaEventDestroy(stop));
-
-    printf("\t%0.3f\n", et);
-
-    // More Memory Management
-    cudaMemcpy(host_output, device_output, inputSize, cudaMemcpyDeviceToHost);
-    cudaFree(device_output);
-    cudaFree(device_input);
-}
-
-// Cuda Stuff
-
-__global__ void GSRBKernel(double* deviceInput, double* deviceOutput)
-{
-    // i, j, k
-
-    
-
-
-}
-
-
 
 
 
