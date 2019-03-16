@@ -1,25 +1,16 @@
 #include <stdio.h>
 #include <iostream>
+#include <random>
+#include <ctime>
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
 
+#include "./bricklib/inc/brick.h"
+
 #define pencil 32
 #define plane  1024
 #define grid   32768
-
-#define DEFAULT_THRESHOLD  4000
-#define BLOCKSIZE 64
-#define TILESIZE 16
-#define cudaCheck(x) _cudaCheck(x, #x ,__FILE__, __LINE__)
-
-template<typename T>
-void _cudaCheck(T e, const char* func, const char* call, const int line){
-  if(e != cudaSuccess){
-    printf("\"%s\" at %d in %s\n\treturned %d\n-> %s\n", func, line, call, (int)e, cudaGetErrorString(e));
-    exit(EXIT_FAILURE);
-  }
-}
 
 // Buffers
 double* phi    ;
@@ -33,7 +24,7 @@ double* lambda ;
 
 // Prototypes
 void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
-         double *beta_i, double *beta_j, double *beta_k, double *lambda, int color);
+         double *beta_i, double *beta_j, double *beta_k, double *lambda);
 int GSRBBricks(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
           float *dx, int color);
 int GSRBGenerated(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
@@ -135,8 +126,8 @@ void InitBufferWithSize(int size)
 
     double range_from = 0.0;
     double range_to = 1.0;
-    std::default_random_engine generator((unsigned)clock());
-    std::uniform_real_distribution<double> distr(range_from, range_to);
+    std::default_random_engine generator((unsigned) clock());
+    std::uniform_real_distribution<double> distr(range_from, range_to); 
 
     for (int i = 0; i < size; ++i)
     {
