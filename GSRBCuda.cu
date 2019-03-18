@@ -32,22 +32,22 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
         for(i=0; i<pencil; i++)
         {
 
-    int ijk = i + j*pencil + k*plane;
+            int ijk = i + j*pencil + k*plane;
 
-    if (i+j+k+color % 2 == 0)
-    {
-        double helmholtz = alpha[ijk]*phi[ijk]
-                         - h2inv*(
-                               beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
-                             - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
-                             + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
-                             - beta_j[ijk       ]*( phi[ijk       ]-phi[ijk-pencil] )
-                             + beta_k[ijk+plane ]*( phi[ijk+plane ]-phi[ijk       ] )
-                             - beta_k[ijk       ]*( phi[ijk       ]-phi[ijk-plane ] )
-                              );
+            if (i+j+k+color % 2 == 0)
+            {
+                double helmholtz = alpha[ijk]*phi[ijk]
+                                 - h2inv*(
+                                       beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
+                                     - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
+                                     + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
+                                     - beta_j[ijk       ]*( phi[ijk       ]-phi[ijk-pencil] )
+                                     + beta_k[ijk+plane ]*( phi[ijk+plane ]-phi[ijk       ] )
+                                     - beta_k[ijk       ]*( phi[ijk       ]-phi[ijk-plane ] )
+                                      );
 
-        phi_new[ijk] = phi[ijk] - lambda[ijk]*(helmholtz-rhs[ijk]);
-    }
+                phi_new[ijk] = phi[ijk] - lambda[ijk]*(helmholtz-rhs[ijk]);
+            }
         }
     }
 }
@@ -114,7 +114,14 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
 
     // Cuda Kernel Call
     GSRBKernel<<<dimGrid, dimBlock>>> (phi_device, phi_new_device, rhs_device, alpha_device, beta_i_device, 
-                                       beta_j_device , beta_k_device , lambda_device, color);
+                                       beta_j_device , beta_k_device , lambda_device, 0);
+
+    cudaCheck(cudaGetLastError());
+    cudaDeviceSynchronize();
+    cudaCheck(cudaGetLastError());
+
+    GSRBKernel<<<dimGrid, dimBlock>>> (phi_device, phi_new_device, rhs_device, alpha_device, beta_i_device, 
+                                       beta_j_device , beta_k_device , lambda_device, 1);
 
     cudaCheck(cudaGetLastError());
     cudaDeviceSynchronize();
