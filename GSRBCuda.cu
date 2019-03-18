@@ -21,8 +21,16 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
                            double* beta_j, double* beta_k, double* lambda, int color)
 {
     // TODO: Find out what i, j, k maps to in terms of blockIdx, blockDim, threadIdx
-    // int currentOffset = blockIdx.x + blockDim.x + threadIdx.x;
-    
+    int currentOffset = blockIdx.x + blockDim.x + threadIdx.x;
+
+    int i, j, k;
+    k = currentOffset;
+
+    for (j=0; j<pencil; j++)
+    {
+        for(i=0; i<pencil; i++)
+        {
+
     int ijk = i + j*pencil + k*plane;
 
     if (i+j+k+color % 2 == 0)
@@ -38,6 +46,8 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
                               );
 
         phi_new[ijk] = phi[ijk] - lambda[ijk]*(helmholtz-rhs[ijk]);
+    }
+        }
     }
 }
 
