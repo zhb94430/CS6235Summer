@@ -1,3 +1,5 @@
+#include "GSRBCuda.h"
+
 #define pencil 32
 #define plane  1024
 #define grid   32768

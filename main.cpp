@@ -7,6 +7,7 @@
 #include <stdlib.h>
 
 #include "./bricklib/inc/brick.h"
+#include "GSRBCuda.h"
 
 #define pencil 32
 #define plane  1024
@@ -29,7 +30,6 @@ int GSRBBricks(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist,
           float *dx, int color);
 int GSRBGenerated(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
                   float *dx, int color);
-void GSRBCuda();
 void InitBufferWithSize(int size);
 
 int main(int argc, char** argv)
