@@ -15,13 +15,6 @@ void _cudaCheck(T e, const char* func, const char* call, const int line){
   }
 }
 
-// C Prototypes
-void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
-         double *beta_i, double *beta_j, double *beta_k, double *lambda, int color);
-// int GSRBGenerated(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
-//                   float *dx, int color);
-void GSRBCuda();
-
 __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
                            double* beta_j, double* beta_k, double* lambda, int color)
 {

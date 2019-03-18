@@ -46,7 +46,7 @@ int GSRBBricks(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist,
 int GSRBGenerated(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
                   float *dx, int color)
 {
-    for (long o = 0; o < blist.len; ++o) {
+  for (long o = 0; o < blist.len; ++o) {
       long b = blist.dat[o];
       long k;
       long j;
