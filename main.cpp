@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 
     // ------------   CUDA Benchmark  ---------------
     InitBufferWithSize(grid * sizeof(double));
-    GSRBCuda();
+    GSRBCuda(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda);
 
 
     // ------------   BRICKS Benchmark  ---------------

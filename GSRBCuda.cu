@@ -24,6 +24,7 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
     int currentOffset = blockIdx.x + blockDim.x + threadIdx.x;
 
     int i, j, k;
+    double h2inv = 1.0/64;
     k = currentOffset;
 
     for (j=0; j<pencil; j++)
@@ -51,7 +52,8 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
     }
 }
 
-void GSRBCuda()
+void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
+              double* beta_j, double* beta_k, double* lambda)
 {
     //CUDA Buffers
     double* phi_device    ;
@@ -128,7 +130,7 @@ void GSRBCuda()
     printf("Cuda Time is %f\n", et);
 
     // More Memory Management
-    cudaMemcpy(host_output, device_output, inputSize, cudaMemcpyDeviceToHost);
-    cudaFree(device_output);
-    cudaFree(device_input);
+    // cudaMemcpy(host_output, device_output, inputSize, cudaMemcpyDeviceToHost);
+    // cudaFree(device_output);
+    // cudaFree(device_input);
 }
