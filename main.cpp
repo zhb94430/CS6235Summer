@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <chrono>
 #include <cstring>
 #include <iostream>
 #include <random>
@@ -90,7 +91,7 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
     double h2inv = 1.0/64;
 
     printf("GSRB Starting..\n");
-    clock_t start = clock();
+    auto t1 = std::chrono::high_resolution_clock::now();
 
     color = 0;
 
@@ -138,9 +139,10 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
       }
     }
 
-    clock_t end = clock();
-    double time_spent = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("CPU Time is %f\n", time_spent);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "CPU Time is "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+              << " milliseconds\n";
 }
 
 // Helper functions
@@ -178,7 +180,6 @@ void CompareResults()
              diff_lambda  > threshold )
         {
            printf("Results does not match at i = %d\n", i);
-           break;
         }
     }
 }
