@@ -239,32 +239,32 @@ void InitBufferWithSize(int size)
         lambda [i] = distr(generator);
     }
 
-    std::memcpy(cpu_phi,     phi,     actualSize);
-    std::memcpy(cpu_phi_new, phi_new, actualSize);
-    std::memcpy(cpu_rhs,     rhs,     actualSize);
-    std::memcpy(cpu_alpha,   alpha,   actualSize);
-    std::memcpy(cpu_beta_i,  beta_i,  actualSize);
-    std::memcpy(cpu_beta_j,  beta_j,  actualSize);
-    std::memcpy(cpu_beta_k,  beta_k,  actualSize);
-    std::memcpy(cpu_lambda,  lambda,  actualSize);
+    memcpy(cpu_phi,     phi,     actualSize);
+    memcpy(cpu_phi_new, phi_new, actualSize);
+    memcpy(cpu_rhs,     rhs,     actualSize);
+    memcpy(cpu_alpha,   alpha,   actualSize);
+    memcpy(cpu_beta_i,  beta_i,  actualSize);
+    memcpy(cpu_beta_j,  beta_j,  actualSize);
+    memcpy(cpu_beta_k,  beta_k,  actualSize);
+    memcpy(cpu_lambda,  lambda,  actualSize);
 
-    std::memcpy(cuda_phi,     phi,     actualSize);
-    std::memcpy(cuda_phi_new, phi_new, actualSize);
-    std::memcpy(cuda_rhs,     rhs,     actualSize);
-    std::memcpy(cuda_alpha,   alpha,   actualSize);
-    std::memcpy(cuda_beta_i,  beta_i,  actualSize);
-    std::memcpy(cuda_beta_j,  beta_j,  actualSize);
-    std::memcpy(cuda_beta_k,  beta_k,  actualSize);
-    std::memcpy(cuda_lambda,  lambda,  actualSize);
+    memcpy(cuda_phi,     phi,     actualSize);
+    memcpy(cuda_phi_new, phi_new, actualSize);
+    memcpy(cuda_rhs,     rhs,     actualSize);
+    memcpy(cuda_alpha,   alpha,   actualSize);
+    memcpy(cuda_beta_i,  beta_i,  actualSize);
+    memcpy(cuda_beta_j,  beta_j,  actualSize);
+    memcpy(cuda_beta_k,  beta_k,  actualSize);
+    memcpy(cuda_lambda,  lambda,  actualSize);
 
-    std::memcpy(bricks_phi,     phi,     actualSize);
-    std::memcpy(bricks_phi_new, phi_new, actualSize);
-    std::memcpy(bricks_rhs,     rhs,     actualSize);
-    std::memcpy(bricks_alpha,   alpha,   actualSize);
-    std::memcpy(bricks_beta_i,  beta_i,  actualSize);
-    std::memcpy(bricks_beta_j,  beta_j,  actualSize);
-    std::memcpy(bricks_beta_k,  beta_k,  actualSize);
-    std::memcpy(bricks_lambda,  lambda,  actualSize);
+    memcpy(bricks_phi,     phi,     actualSize);
+    memcpy(bricks_phi_new, phi_new, actualSize);
+    memcpy(bricks_rhs,     rhs,     actualSize);
+    memcpy(bricks_alpha,   alpha,   actualSize);
+    memcpy(bricks_beta_i,  beta_i,  actualSize);
+    memcpy(bricks_beta_j,  beta_j,  actualSize);
+    memcpy(bricks_beta_k,  beta_k,  actualSize);
+    memcpy(bricks_lambda,  lambda,  actualSize);
 }
 
 
