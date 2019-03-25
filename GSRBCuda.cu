@@ -139,7 +139,22 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
     printf("Cuda Time is %f\n", et);
 
     // More Memory Management
-    // cudaMemcpy(host_output, device_output, inputSize, cudaMemcpyDeviceToHost);
-    // cudaFree(device_output);
-    // cudaFree(device_input);
+    cudaCheck(cudaMemcpy(phi    , phi_device,     grid * sizeof(double), cudaMemcpyDeviceToHost));
+    cudaCheck(cudaMemcpy(phi_new, phi_new_device, grid * sizeof(double), cudaMemcpyDeviceToHost));
+    cudaCheck(cudaMemcpy(rhs    , rhs_device,     grid * sizeof(double), cudaMemcpyDeviceToHost));
+    cudaCheck(cudaMemcpy(alpha  , alpha_device,   grid * sizeof(double), cudaMemcpyDeviceToHost));
+    cudaCheck(cudaMemcpy(beta_i , beta_i_device,  grid * sizeof(double), cudaMemcpyDeviceToHost));
+    cudaCheck(cudaMemcpy(beta_j , beta_j_device,  grid * sizeof(double), cudaMemcpyDeviceToHost));
+    cudaCheck(cudaMemcpy(beta_k , beta_k_device,  grid * sizeof(double), cudaMemcpyDeviceToHost));
+    cudaCheck(cudaMemcpy(lambda , lambda_device,  grid * sizeof(double), cudaMemcpyDeviceToHost));
+    cudaCheck(cudaGetLastError());
+
+    cudaFree(phi_device    );
+    cudaFree(phi_new_device);
+    cudaFree(rhs_device    );
+    cudaFree(alpha_device  );
+    cudaFree(beta_i_device );
+    cudaFree(beta_j_device );
+    cudaFree(beta_k_device );
+    cudaFree(lambda_device );
 }
