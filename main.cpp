@@ -174,8 +174,7 @@ void CompareResults()
              diff_beta_i  > threshold ||
              diff_beta_j  > threshold ||
              diff_beta_k  > threshold ||
-             diff_lambda  > threshold ||
-           )
+             diff_lambda  > threshold )
         {
            printf("Results does not match at i = %d\n", i);
            break;
