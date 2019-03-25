@@ -55,6 +55,8 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
 void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
               double* beta_j, double* beta_k, double* lambda)
 {
+    printf("GSRBCuda Starting..\n");
+
     //CUDA Buffers
     double* phi_device    ;
     double* phi_new_device;
