@@ -158,14 +158,14 @@ void CompareResults()
 
     for (int i = 0; i < grid; i++)
     {
-        double diff_phi     = abs(cpu_phi[i]     - cuda_phi[i]);
-        double diff_phi_new = abs(cpu_phi_new[i] - cuda_phi_new[i]);
-        double diff_rhs     = abs(cpu_rhs[i]     - cuda_rhs[i]);
-        double diff_alpha   = abs(cpu_alpha[i]   - cuda_alpha[i]);
-        double diff_beta_i  = abs(cpu_beta_i[i]  - cuda_beta_i[i]);
-        double diff_beta_j  = abs(cpu_beta_j[i]  - cuda_beta_j[i]);
-        double diff_beta_k  = abs(cpu_beta_k[i]  - cuda_beta_k[i]);
-        double diff_lambda  = abs(cpu_lambda[i]  - cuda_lambda[i]);
+        diff_phi     = abs(cpu_phi[i]     - cuda_phi[i]);
+        diff_phi_new = abs(cpu_phi_new[i] - cuda_phi_new[i]);
+        diff_rhs     = abs(cpu_rhs[i]     - cuda_rhs[i]);
+        diff_alpha   = abs(cpu_alpha[i]   - cuda_alpha[i]);
+        diff_beta_i  = abs(cpu_beta_i[i]  - cuda_beta_i[i]);
+        diff_beta_j  = abs(cpu_beta_j[i]  - cuda_beta_j[i]);
+        diff_beta_k  = abs(cpu_beta_k[i]  - cuda_beta_k[i]);
+        diff_lambda  = abs(cpu_lambda[i]  - cuda_lambda[i]);
 
         if ( diff_phi     > threshold ||
              diff_phi_new > threshold ||
@@ -174,8 +174,7 @@ void CompareResults()
              diff_beta_i  > threshold ||
              diff_beta_j  > threshold ||
              diff_beta_k  > threshold ||
-             diff_lambda  > threshold ||
-           )
+             diff_lambda  > threshold )
         {
            printf("Results does not match at i = %d\n", i);
            break;
