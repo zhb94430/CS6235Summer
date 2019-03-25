@@ -34,13 +34,15 @@ void InitBufferWithSize(int size);
 
 int main(int argc, char** argv)
 {
-    // ------------   CPU Benchmark  ---------------
+    InitBufferWithSize(grid);
 
-    InitBufferWithSize(grid * sizeof(double));
+    // ------------   CPU Benchmark  ---------------
     GSRB(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda);
 
+    // ------------   Store Result to compare later -------------
+    
+
     // ------------   CUDA Benchmark  ---------------
-    InitBufferWithSize(grid * sizeof(double));
     GSRBCuda(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda);
 
 
@@ -117,21 +119,21 @@ void InitBufferWithSize(int size)
 {
     int actualSize = size*sizeof(double);
 
-    phi     = (double*)malloc(size);
-    phi_new = (double*)malloc(size);
-    rhs     = (double*)malloc(size);
-    alpha   = (double*)malloc(size);
-    beta_i  = (double*)malloc(size);
-    beta_j  = (double*)malloc(size);
-    beta_k  = (double*)malloc(size);
-    lambda  = (double*)malloc(size);
+    phi     = (double*)malloc(actualSize);
+    phi_new = (double*)malloc(actualSize);
+    rhs     = (double*)malloc(actualSize);
+    alpha   = (double*)malloc(actualSize);
+    beta_i  = (double*)malloc(actualSize);
+    beta_j  = (double*)malloc(actualSize);
+    beta_k  = (double*)malloc(actualSize);
+    lambda  = (double*)malloc(actualSize);
 
     double range_from = 0.0;
     double range_to = 1.0;
     std::default_random_engine generator((unsigned) clock());
     std::uniform_real_distribution<double> distr(range_from, range_to); 
 
-    for (int i = 0; i < grid; ++i)
+    for (int i = 0; i < size; ++i)
     {
         phi    [i] = distr(generator);
         phi_new[i] = distr(generator);
