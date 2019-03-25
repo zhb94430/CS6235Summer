@@ -115,6 +115,8 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
 // Helper functions
 void InitBufferWithSize(int size)
 {
+    int actualSize = size*sizeof(double);
+
     phi     = (double*)malloc(size);
     phi_new = (double*)malloc(size);
     rhs     = (double*)malloc(size);
@@ -129,7 +131,7 @@ void InitBufferWithSize(int size)
     std::default_random_engine generator((unsigned) clock());
     std::uniform_real_distribution<double> distr(range_from, range_to); 
 
-    for (int i = 0; i < size; ++i)
+    for (int i = 0; i < grid; ++i)
     {
         phi    [i] = distr(generator);
         phi_new[i] = distr(generator);
