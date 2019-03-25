@@ -3,6 +3,7 @@
 #include <iostream>
 #include <random>
 #include <ctime>
+#include <cmath>
 #include <time.h>
 #include <math.h>
 #include <stdlib.h>
@@ -158,14 +159,14 @@ void CompareResults()
 
     for (int i = 0; i < grid; i++)
     {
-        diff_phi     = abs(cpu_phi[i]     - cuda_phi[i]);
-        diff_phi_new = abs(cpu_phi_new[i] - cuda_phi_new[i]);
-        diff_rhs     = abs(cpu_rhs[i]     - cuda_rhs[i]);
-        diff_alpha   = abs(cpu_alpha[i]   - cuda_alpha[i]);
-        diff_beta_i  = abs(cpu_beta_i[i]  - cuda_beta_i[i]);
-        diff_beta_j  = abs(cpu_beta_j[i]  - cuda_beta_j[i]);
-        diff_beta_k  = abs(cpu_beta_k[i]  - cuda_beta_k[i]);
-        diff_lambda  = abs(cpu_lambda[i]  - cuda_lambda[i]);
+        diff_phi     = std::abs(cpu_phi[i]     - cuda_phi[i]);
+        diff_phi_new = std::abs(cpu_phi_new[i] - cuda_phi_new[i]);
+        diff_rhs     = std::abs(cpu_rhs[i]     - cuda_rhs[i]);
+        diff_alpha   = std::abs(cpu_alpha[i]   - cuda_alpha[i]);
+        diff_beta_i  = std::abs(cpu_beta_i[i]  - cuda_beta_i[i]);
+        diff_beta_j  = std::abs(cpu_beta_j[i]  - cuda_beta_j[i]);
+        diff_beta_k  = std::abs(cpu_beta_k[i]  - cuda_beta_k[i]);
+        diff_lambda  = std::abs(cpu_lambda[i]  - cuda_lambda[i]);
 
         if ( diff_phi     > threshold ||
              diff_phi_new > threshold ||
