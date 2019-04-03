@@ -1,8 +1,6 @@
 #include "GSRBCuda.h"
+#include "GSRBConstants.h"
 
-#define pencil 32
-#define plane  1024
-#define grid   32768
 
 #define DEFAULT_THRESHOLD  4000
 #define BLOCKSIZE 64
@@ -24,7 +22,6 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
     int currentOffset = blockIdx.x + blockDim.x + threadIdx.x;
 
     int i, j, k;
-    double h2inv = 1.0/64;
     k = currentOffset;
 
     for (j=0; j<pencil; j++)
@@ -37,7 +34,7 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
             if (i+j+k+color % 2 == 0)
             {
                 double helmholtz = alpha[ijk]*phi[ijk]
-                                 - h2inv*(
+                                 - H2INV*(
                                        beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
                                      - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
                                      + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )

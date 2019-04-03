@@ -11,10 +11,8 @@
 
 #include "./bricklib/inc/brick.h"
 #include "GSRBCuda.h"
-
-#define pencil 32
-#define plane  1024
-#define grid   32768
+#include "GSRBBricks.h"
+#include "GSRBConstants.h"
 
 // Buffers
 double* phi    ;
@@ -56,10 +54,10 @@ double* bricks_lambda ;
 // Prototypes
 void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
          double *beta_i, double *beta_j, double *beta_k, double *lambda);
-int GSRBBricks(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
-          float *dx, int color);
-int GSRBGenerated(brickd *phi, brickd *inbox, brickd *phi_new, brick_list &blist, 
-                  float *dx, int color);
+
+int GSRBBricks(double* phi, double* phi_new, double* rhs, double* alpha,
+               double* beta_i, double* beta_j, double* beta_k, double* lambda);
+// Helper Functions
 void InitBufferWithSize(int size);
 void CompareResults();
 
@@ -74,7 +72,6 @@ int main(int argc, char** argv)
     GSRBCuda(cuda_phi, cuda_phi_new, cuda_rhs, cuda_alpha, cuda_beta_i, cuda_beta_j, cuda_beta_k, cuda_lambda);
 
     // ------------   BRICKS Benchmark  ---------------
-    // InitBufferWithSize(grid * sizeof(double));
     // // Start Timer
     // // TODO: How to time bricks?
     // GSRBBricks(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda, color);
