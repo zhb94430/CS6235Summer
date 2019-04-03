@@ -1,4 +1,4 @@
-##ifndef GSRBBRICKS_H
+#ifndef GSRBBRICKS_H
 #define GSRBBRICKS_H
 
 #include <stdio.h>
