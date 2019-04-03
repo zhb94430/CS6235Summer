@@ -55,8 +55,6 @@ double* bricks_lambda ;
 void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
          double *beta_i, double *beta_j, double *beta_k, double *lambda);
 
-int GSRBBricks(double* phi, double* phi_new, double* rhs, double* alpha,
-               double* beta_i, double* beta_j, double* beta_k, double* lambda);
 // Helper Functions
 void InitBufferWithSize(int size);
 void CompareResults();
