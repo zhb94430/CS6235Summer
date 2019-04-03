@@ -74,7 +74,7 @@ int main(int argc, char** argv)
     // ------------   BRICKS Benchmark  ---------------
     // // Start Timer
     // // TODO: How to time bricks?
-    // GSRBBricks(phi, phi_new, rhs, alpha, beta_i, beta_j, beta_k, lambda, color);
+    GSRBBricks(bricks_phi, bricks_phi_new, bricks_rhs, bricks_alpha, bricks_beta_i, bricks_beta_j, bricks_beta_k, bricks_lambda);
     // // End Timer
 
     // Compare
