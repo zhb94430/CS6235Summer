@@ -5,6 +5,8 @@
 
 #include "./bricklib/inc/brick.h"
 #include "GSRBConstants.h"
+#include "immintrin.h"
+#include "omp.h"
 
 #define BDIM_Z  4
 #define BDIM_Y  4
