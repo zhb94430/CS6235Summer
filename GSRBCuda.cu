@@ -18,11 +18,18 @@ void _cudaCheck(T e, const char* func, const char* call, const int line){
 __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
                            double* beta_j, double* beta_k, double* lambda, int color)
 {
-    // TODO: Find out what i, j, k maps to in terms of blockIdx, blockDim, threadIdx
-    int currentOffset = blockIdx.x + blockDim.x + threadIdx.x;
-
     int i, j, k;
-    i = currentOffset+1;
+    // int currentOffset = 1 + blockIdx.x + blockDim.x + threadIdx.x;
+    int currentOffset = 1 + threadIdx.x;
+
+    if (currentOffset >= pencil-1)
+    {
+       return;
+    }
+    else
+    {
+      i = currentOffset;
+    }
 
     for (k=1; k<pencil-1; k++)
     {
@@ -99,8 +106,8 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
     // Dimension
     // TODO, need to figure out how many
     long numOfThreads = pencil;
-    long numOfBlocks = ceil(pencil/numOfThreads);
-    // long numOfBlocks = ceil(grid/numOfThreads);
+    // long numOfBlocks = ceil(pencil/numOfThreads);
+    long numOfBlocks = ceil(grid/numOfThreads);
 
     dim3 dimBlock(numOfThreads);
     dim3 dimGrid(numOfBlocks);
