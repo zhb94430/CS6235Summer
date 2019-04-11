@@ -572,8 +572,10 @@ int GSRBBricks(double* phi, double* phi_new, double* rhs, double* alpha,
     }
 
     auto t2 = std::chrono::high_resolution_clock::now();
-    std::cout << "CPU Time is "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+    std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
+
+    std::cout << "Brick Time is "
+              << fp_ms.count()
               << " milliseconds\n";
 
     phi = bricks_phi.dat;

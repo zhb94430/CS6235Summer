@@ -52,8 +52,6 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
 void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
               double* beta_j, double* beta_k, double* lambda)
 {
-    printf("GSRBCuda Starting..\n");
-
     //CUDA Buffers
     double* phi_device    ;
     double* phi_new_device;
@@ -114,6 +112,9 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
     cudaCheck(cudaEventCreate(&stop));
     cudaCheck(cudaEventRecord(start));
 
+    printf("GSRBCuda Starting..\n");
+    auto t1 = std::chrono::high_resolution_clock::now();
+
     for (int timestep = 0; timestep < 4; timestep++)
     {
       // Cuda Kernel Call
@@ -136,7 +137,12 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
       phi_device = tmp;
     }
 
-    
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
+
+    std::cout << "CUDA Time is "
+              << fp_ms.count()
+              << " milliseconds\n";
 
     // Time event end
     cudaCheck(cudaEventRecord(stop));
