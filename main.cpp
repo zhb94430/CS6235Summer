@@ -84,54 +84,62 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
 {
     int i, j, k, color;
     double h2inv = 1.0/64;
+    double* tmp;
 
     printf("GSRB Starting..\n");
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    color = 0;
+    for (int timestep = 0; timestep < 4; timestep++)
+    {
+      color = 0;
 
-    for(k=0;k<pencil;k++){
-      for(j=0;j<pencil;j++){
-        for(i=0;i<pencil;i++){
-          int ijk = i + j*pencil + k*plane;
-          if(i+j+k+color % 2 == 0){ // color signifies red or black case
-            double helmholtz = alpha[ijk]*phi[ijk]
-                             - h2inv*(
-                                 beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
-                               - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
-                               + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
-                               - beta_j[ijk       ]*( phi[ijk       ]-phi[ijk-pencil] )
-                               + beta_k[ijk+plane ]*( phi[ijk+plane ]-phi[ijk       ] )
-                               - beta_k[ijk       ]*( phi[ijk       ]-phi[ijk-plane ] )
-                                  );
+      for(k=1;k<pencil-1;k++){
+        for(j=1;j<pencil-1;j++){
+          for(i=1;i<pencil-1;i++){
+            int ijk = i + j*pencil + k*plane;
+            if(i+j+k+color % 2 == 0){ // color signifies red or black case
+              double helmholtz = alpha[ijk]*phi[ijk]
+                               - h2inv*(
+                                   beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
+                                 - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
+                                 + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
+                                 - beta_j[ijk       ]*( phi[ijk       ]-phi[ijk-pencil] )
+                                 + beta_k[ijk+plane ]*( phi[ijk+plane ]-phi[ijk       ] )
+                                 - beta_k[ijk       ]*( phi[ijk       ]-phi[ijk-plane ] )
+                                    );
 
-            phi_new[ijk] = phi[ijk] - lambda[ijk]*(helmholtz-rhs[ijk]);
+              phi_new[ijk] = phi[ijk] - lambda[ijk]*(helmholtz-rhs[ijk]);
+            }
           }
         }
       }
-    }
 
-    color = 1;
+      color = 1;
 
-    for(k=0;k<pencil;k++){
-      for(j=0;j<pencil;j++){
-        for(i=0;i<pencil;i++){
-          int ijk = i + j*pencil + k*plane;
-          if(i+j+k+color % 2 == 0){ // color signifies red or black case
-            double helmholtz = alpha[ijk]*phi[ijk]
-                             - h2inv*(
-                                 beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
-                               - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
-                               + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
-                               - beta_j[ijk       ]*( phi[ijk       ]-phi[ijk-pencil] )
-                               + beta_k[ijk+plane ]*( phi[ijk+plane ]-phi[ijk       ] )
-                               - beta_k[ijk       ]*( phi[ijk       ]-phi[ijk-plane ] )
-                                  );
+      for(k=1;k<pencil-1;k++){
+        for(j=1;j<pencil-1;j++){
+          for(i=1;i<pencil-1;i++){
+            int ijk = i + j*pencil + k*plane;
+            if(i+j+k+color % 2 == 0){ // color signifies red or black case
+              double helmholtz = alpha[ijk]*phi[ijk]
+                               - h2inv*(
+                                   beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
+                                 - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
+                                 + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
+                                 - beta_j[ijk       ]*( phi[ijk       ]-phi[ijk-pencil] )
+                                 + beta_k[ijk+plane ]*( phi[ijk+plane ]-phi[ijk       ] )
+                                 - beta_k[ijk       ]*( phi[ijk       ]-phi[ijk-plane ] )
+                                    );
 
-            phi_new[ijk] = phi[ijk] - lambda[ijk]*(helmholtz-rhs[ijk]);
+              phi_new[ijk] = phi[ijk] - lambda[ijk]*(helmholtz-rhs[ijk]);
+            }
           }
         }
       }
+
+      tmp = phi_new;
+      phi_new = phi;
+      phi = tmp;
     }
 
     auto t2 = std::chrono::high_resolution_clock::now();

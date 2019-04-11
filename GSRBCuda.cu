@@ -22,11 +22,11 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
     int currentOffset = blockIdx.x + blockDim.x + threadIdx.x;
 
     int i, j, k;
-    k = currentOffset;
+    i = currentOffset+1;
 
-    for (j=0; j<pencil; j++)
+    for (k=1; k<pencil-1; k++)
     {
-        for(i=0; i<pencil; i++)
+        for(j=1; j<pencil-1; j++)
         {
 
             int ijk = i + j*pencil + k*plane;
@@ -64,6 +64,8 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
     double* beta_k_device ;
     double* lambda_device ;
 
+    double* tmp;
+
     // Init Memory on GPU
     // Cuda Memory Management
     cudaCheck(cudaMalloc((void**) &phi_device    , grid * sizeof(double)));
@@ -98,12 +100,13 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
 
     // Dimension
     // TODO, need to figure out how many
-    long numOfBlocks = 50;
+    long numOfThreads = 64;
+    long numOfBlocks = ceil(pencil/numOfThreads)
 
+    dim3 dimBlock(numOfThreads);
     dim3 dimGrid(numOfBlocks);
-    dim3 dimBlock(numOfBlocks);
 
-    printf("Config: #ofBlocks %d, #ofThreads %d\n", numOfBlocks, numOfBlocks);
+    printf("Config: #ofThreads %d, #ofBlocks %d\n", numOfThreads, numOfBlocks);
 
     cudaEvent_t start, stop;
     float et;
@@ -111,20 +114,29 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
     cudaCheck(cudaEventCreate(&stop));
     cudaCheck(cudaEventRecord(start));
 
-    // Cuda Kernel Call
-    GSRBKernel<<<dimGrid, dimBlock>>> (phi_device, phi_new_device, rhs_device, alpha_device, beta_i_device, 
-                                       beta_j_device , beta_k_device , lambda_device, 0);
+    for (int timestep = 0; timestep < 4; timestep++)
+    {
+      // Cuda Kernel Call
+      GSRBKernel<<<dimGrid, dimBlock>>> (phi_device, phi_new_device, rhs_device, alpha_device, beta_i_device, 
+                                         beta_j_device , beta_k_device , lambda_device, 0);
 
-    cudaCheck(cudaGetLastError());
-    cudaDeviceSynchronize();
-    cudaCheck(cudaGetLastError());
+      cudaCheck(cudaGetLastError());
+      cudaDeviceSynchronize();
+      cudaCheck(cudaGetLastError());
 
-    GSRBKernel<<<dimGrid, dimBlock>>> (phi_device, phi_new_device, rhs_device, alpha_device, beta_i_device, 
-                                       beta_j_device , beta_k_device , lambda_device, 1);
+      GSRBKernel<<<dimGrid, dimBlock>>> (phi_device, phi_new_device, rhs_device, alpha_device, beta_i_device, 
+                                         beta_j_device , beta_k_device , lambda_device, 1);
 
-    cudaCheck(cudaGetLastError());
-    cudaDeviceSynchronize();
-    cudaCheck(cudaGetLastError());
+      cudaCheck(cudaGetLastError());
+      cudaDeviceSynchronize();
+      cudaCheck(cudaGetLastError());
+
+      tmp = phi_new_device;
+      phi_new_device = phi_device;
+      phi_device = tmp;
+    }
+
+    
 
     // Time event end
     cudaCheck(cudaEventRecord(stop));
