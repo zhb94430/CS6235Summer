@@ -31,7 +31,7 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
 
             int ijk = i + j*pencil + k*plane;
 
-            if (i+j+k+color % 2 == 0)
+            if ((i+j+k+color) % 2 == 0)
             {
                 double helmholtz = alpha[ijk]*phi[ijk]
                                  - H2INV*(

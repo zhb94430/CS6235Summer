@@ -97,7 +97,7 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
         for(j=1;j<pencil-1;j++){
           for(i=1;i<pencil-1;i++){
             int ijk = i + j*pencil + k*plane;
-            if(i+j+k+color % 2 == 0){ // color signifies red or black case
+            if((i+j+k+color) % 2 == 0){ // color signifies red or black case
               double helmholtz = alpha[ijk]*phi[ijk]
                                - h2inv*(
                                    beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
@@ -120,7 +120,7 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
         for(j=1;j<pencil-1;j++){
           for(i=1;i<pencil-1;i++){
             int ijk = i + j*pencil + k*plane;
-            if(i+j+k+color % 2 == 0){ // color signifies red or black case
+            if((i+j+k+color) % 2 == 0){ // color signifies red or black case
               double helmholtz = alpha[ijk]*phi[ijk]
                                - h2inv*(
                                    beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )

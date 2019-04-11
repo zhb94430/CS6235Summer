@@ -17,7 +17,7 @@ int GSRBBricksCode(brickd& phi, brickd& phi_new, brickd& rhs, brickd& alpha,
             
             int ijk = i + j*pencil + k*plane;
 
-            if (i+j+k+color[0] % 2 == 0)
+            if ((i+j+k+color[0]) % 2 == 0)
             {
               float helmholtz = alpha.elem(b,k,j,i) * phi.elem(b,k,j,i) - H2INV 
                            * (  
