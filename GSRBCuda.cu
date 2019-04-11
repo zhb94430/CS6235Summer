@@ -101,7 +101,7 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
     // Dimension
     // TODO, need to figure out how many
     long numOfThreads = 64;
-    long numOfBlocks = ceil(pencil/numOfThreads);
+    long numOfBlocks = ceil(grid/numOfThreads);
 
     dim3 dimBlock(numOfThreads);
     dim3 dimGrid(numOfBlocks);
