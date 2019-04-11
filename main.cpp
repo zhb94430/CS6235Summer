@@ -147,7 +147,7 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
 
     std::cout << "CPU Time is "
               // << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
-              << fp_ms.count();
+              << fp_ms.count()
               << " milliseconds\n";
 }
 
