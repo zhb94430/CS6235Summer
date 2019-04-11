@@ -143,8 +143,11 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
     }
 
     auto t2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
+
     std::cout << "CPU Time is "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+              // << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
+              << fp_ms.count();
               << " milliseconds\n";
 }
 
