@@ -165,6 +165,8 @@ void CompareResults()
 
     double threshold = 0.000001;
 
+    int unmatched = 0;
+
     for (int i = 0; i < grid; i++)
     {
         diff_phi     = std::abs(cpu_phi[i]     - cuda_phi[i]);
@@ -185,9 +187,12 @@ void CompareResults()
              diff_beta_k  > threshold ||
              diff_lambda  > threshold )
         {
-           printf("Results does not match at i = %d\n", i);
+           // printf("Results does not match at i = %d\n", i);
+          unmatched++
         }
     }
+
+    printf("%d results not matched\n", unmatched);
 }
 
 void InitBufferWithSize(int size)
