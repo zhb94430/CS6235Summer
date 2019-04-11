@@ -188,7 +188,7 @@ void CompareResults()
              diff_lambda  > threshold )
         {
            // printf("Results does not match at i = %d\n", i);
-          unmatched++
+          unmatched++;
         }
     }
 
