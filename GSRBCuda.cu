@@ -18,20 +18,27 @@ void _cudaCheck(T e, const char* func, const char* call, const int line){
 __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
                            double* beta_j, double* beta_k, double* lambda, int color)
 {
-    // TODO: Find out what i, j, k maps to in terms of blockIdx, blockDim, threadIdx
-    int currentOffset = blockIdx.x + blockDim.x + threadIdx.x;
-
     int i, j, k;
-    k = currentOffset;
+    // int currentOffset = 1 + blockIdx.x + blockDim.x + threadIdx.x;
+    int currentOffset = 1 + threadIdx.x;
 
-    for (j=0; j<pencil; j++)
+    if (currentOffset >= pencil-1)
     {
-        for(i=0; i<pencil; i++)
+       return;
+    }
+    else
+    {
+      i = currentOffset;
+    }
+
+    for (k=1; k<pencil-1; k++)
+    {
+        for(j=1; j<pencil-1; j++)
         {
 
             int ijk = i + j*pencil + k*plane;
 
-            if (i+j+k+color % 2 == 0)
+            if ((i+j+k+color) % 2 == 0)
             {
                 double helmholtz = alpha[ijk]*phi[ijk]
                                  - H2INV*(
@@ -52,8 +59,6 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
 void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* beta_i,
               double* beta_j, double* beta_k, double* lambda)
 {
-    printf("GSRBCuda Starting..\n");
-
     //CUDA Buffers
     double* phi_device    ;
     double* phi_new_device;
@@ -63,6 +68,8 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
     double* beta_j_device ;
     double* beta_k_device ;
     double* lambda_device ;
+
+    double* tmp;
 
     // Init Memory on GPU
     // Cuda Memory Management
@@ -99,14 +106,14 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
     // Dimension
     // TODO, need to figure out how many
 
-    // Threads in a block
+    long numOfThreads = pencil;
+    // long numOfBlocks = ceil(pencil/numOfThreads);
+    long numOfBlocks = ceil(grid/numOfThreads);
 
-    long numOfBlocks = 50;
-
+    dim3 dimBlock(numOfThreads);
     dim3 dimGrid(numOfBlocks);
-    dim3 dimBlock(numOfBlocks);
 
-    printf("Config: #ofBlocks %d, #ofThreads %d\n", numOfBlocks, numOfBlocks);
+    printf("Config: #ofThreads %d, #ofBlocks %d\n", numOfThreads, numOfBlocks);
 
     cudaEvent_t start, stop;
     float et;
@@ -114,20 +121,37 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
     cudaCheck(cudaEventCreate(&stop));
     cudaCheck(cudaEventRecord(start));
 
-    // Cuda Kernel Call
-    GSRBKernel<<<dimGrid, dimBlock>>> (phi_device, phi_new_device, rhs_device, alpha_device, beta_i_device, 
-                                       beta_j_device , beta_k_device , lambda_device, 0);
+    printf("GSRBCuda Starting..\n");
+    auto t1 = std::chrono::high_resolution_clock::now();
 
-    cudaCheck(cudaGetLastError());
-    cudaDeviceSynchronize();
-    cudaCheck(cudaGetLastError());
+    for (int timestep = 0; timestep < 4; timestep++)
+    {
+      // Cuda Kernel Call
+      GSRBKernel<<<dimGrid, dimBlock>>> (phi_device, phi_new_device, rhs_device, alpha_device, beta_i_device, 
+                                         beta_j_device , beta_k_device , lambda_device, 0);
 
-    GSRBKernel<<<dimGrid, dimBlock>>> (phi_device, phi_new_device, rhs_device, alpha_device, beta_i_device, 
-                                       beta_j_device , beta_k_device , lambda_device, 1);
+      cudaCheck(cudaGetLastError());
+      cudaDeviceSynchronize();
+      cudaCheck(cudaGetLastError());
 
-    cudaCheck(cudaGetLastError());
-    cudaDeviceSynchronize();
-    cudaCheck(cudaGetLastError());
+      GSRBKernel<<<dimGrid, dimBlock>>> (phi_device, phi_new_device, rhs_device, alpha_device, beta_i_device, 
+                                         beta_j_device , beta_k_device , lambda_device, 1);
+
+      cudaCheck(cudaGetLastError());
+      cudaDeviceSynchronize();
+      cudaCheck(cudaGetLastError());
+
+      tmp = phi_new_device;
+      phi_new_device = phi_device;
+      phi_device = tmp;
+    }
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
+
+    std::cout << "CUDA Time is "
+              << fp_ms.count()
+              << " milliseconds\n";
 
     // Time event end
     cudaCheck(cudaEventRecord(stop));

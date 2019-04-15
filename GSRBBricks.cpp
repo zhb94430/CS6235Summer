@@ -8,11 +8,11 @@ int GSRBBricksCode(brickd& phi_red, brickd& phi_blue, brickd& rhs, brickd& alpha
     {
       long b = blist.dat[o];
       long i, j, k;
-      for (k = 0; k < phi.info->dim_z; ++k)
+      for (k = 1; k < phi.info->dim_z-1; ++k)
       {
-        for (j = 0; j < phi.info->dim_y; ++j)
+        for (j = 1; j < phi.info->dim_y-1; ++j)
         {
-          for (i = 0; i < phi.info->dim_x; ++i) 
+          for (i = 1; i < phi.info->dim_x-1; ++i) 
           {
             
             int ijk = i + j*pencil + k*plane;
@@ -20,7 +20,7 @@ int GSRBBricksCode(brickd& phi_red, brickd& phi_blue, brickd& rhs, brickd& alpha
             brickd phi_red(phiB, 0);
             brickd phi_blue(phiB, 1);
 
-            if (i+j+k+color[0] % 2 == 0)
+            if ((i+j+k+color[0]) % 2 == 0)
             {
               float helmholtz = alpha.elem(b,k,j,i) * phi.elem(b,k,j,i) - H2INV 
                            * (  
@@ -542,8 +542,6 @@ void GSRBGenerated(struct ::brickd &phi, struct ::brickd &phi_new, struct ::bric
 int GSRBBricks(double* phi, double* phi_new, double* rhs, double* alpha,
                double* beta_i, double* beta_j, double* beta_k, double* lambda);
 {
-    printf("GSRBBricks Starting..\n");
-
     brick_info binfo(BDIM_Z, BDIM_Y, BDIM_X);
   // Create bricks according to the mapping
     brick_list blist = binfo.genList(n / BDIM_Z + 2, n / BDIM_Y + 2, n / BDIM_X + 2, RZ, RY, RX, BZ, BY, BX);
@@ -567,8 +565,23 @@ int GSRBBricks(double* phi, double* phi_new, double* rhs, double* alpha,
     bricks_beta_k.dat = beta_k;
     bricks_lambda.dat = lambda;
 
-    GSRBGenerated(bricks_phi, bricks_phi_new, bricks_rhs, bricks_alpha, bricks_beta_i, bricks_beta_j, bricks_beta_k, bricks_lambda, blist, 0);
-    GSRBGenerated(bricks_phi, bricks_phi_new, bricks_rhs, bricks_alpha, bricks_beta_i, bricks_beta_j, bricks_beta_k, bricks_lambda, blist, 1);   
+    printf("GSRBBricks Starting..\n");
+    auto t1 = std::chrono::high_resolution_clock::now();
+
+    for (int timestep = 0; timestep < 4; timestep++)
+    {
+      GSRBGenerated(bricks_phi, bricks_phi_new, bricks_rhs, bricks_alpha, bricks_beta_i, bricks_beta_j, bricks_beta_k, bricks_lambda, blist, 0);
+      GSRBGenerated(bricks_phi, bricks_phi_new, bricks_rhs, bricks_alpha, bricks_beta_i, bricks_beta_j, bricks_beta_k, bricks_lambda, blist, 1);  
+
+      // Swap Phi and Phi_new 
+    }
+
+    auto t2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
+
+    std::cout << "Brick Time is "
+              << fp_ms.count()
+              << " milliseconds\n";
 
     phi = bricks_phi.dat;
     phi_new = bricks_phi_new.dat;
