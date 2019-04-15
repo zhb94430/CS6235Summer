@@ -1,6 +1,6 @@
 #include "GSRBBricks.h"
 
-int GSRBBricksCode(brickd& phi, brickd& phi_new, brickd& rhs, brickd& alpha,
+int GSRBBricksCode(brickd& phi_red, brickd& phi_blue, brickd& rhs, brickd& alpha,
                    brickd& beta_i, brickd& beta_j, brickd& beta_k, brickd& lambda,
                    brick_list& blist, int* color)
 {
@@ -16,6 +16,9 @@ int GSRBBricksCode(brickd& phi, brickd& phi_new, brickd& rhs, brickd& alpha,
           {
             
             int ijk = i + j*pencil + k*plane;
+            brick phiB(binfo, 2, siaeof)
+            brickd phi_red(phiB, 0);
+            brickd phi_blue(phiB, 1);
 
             if (i+j+k+color[0] % 2 == 0)
             {
@@ -38,12 +41,14 @@ int GSRBBricksCode(brickd& phi, brickd& phi_new, brickd& rhs, brickd& alpha,
     return 1;
 }
 
-int GSRBGenerated(struct ::brickd &phi, struct ::brickd &phi_new, struct ::brickd &rhs, struct ::brickd &alpha, struct ::brickd &beta_i, struct ::brickd &beta_j, struct ::brickd &beta_k, struct ::brickd &lambda, struct ::brick_list &blist, int *color) {
-  for (long o = 0; o < blist.len; ++o) {
-    long b = blist.dat[o];
+__global__
+void GSRBGenerated(struct ::brickd &phi, struct ::brickd &phi_new, struct ::brickd &rhs, struct ::brickd &alpha, struct ::brickd &beta_i, struct ::brickd &beta_j, struct ::brickd &beta_k, struct ::brickd &lambda, struct ::brick_list &blist, int *color) {
+  GSRBGenerated<<<blist.len, 32>>>>
+    long b = blist.dat[blockIdx.x];
     long i;
     long j;
     long k;
+    long lid = threadIdx.x & 31;
     {
       brick_info *binfo = phi_new.info;
       long b0 = binfo->adj[b][0];

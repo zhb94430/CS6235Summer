@@ -98,6 +98,9 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
 
     // Dimension
     // TODO, need to figure out how many
+
+    // Threads in a block
+
     long numOfBlocks = 50;
 
     dim3 dimGrid(numOfBlocks);
