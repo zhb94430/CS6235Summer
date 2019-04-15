@@ -108,7 +108,7 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
 
     long numOfThreads = pencil;
     // long numOfBlocks = ceil(pencil/numOfThreads);
-    long numOfBlocks = ceil(grid/numOfThreads);
+    long numOfBlocks = ceil(grid/(numOfThreads*pencil*pencil); // Unroll on i
 
     dim3 dimBlock(numOfThreads);
     dim3 dimGrid(numOfBlocks);
