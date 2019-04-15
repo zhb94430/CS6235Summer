@@ -20,9 +20,13 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
 {
     int i, j, k;
     // int currentOffset = 1 + blockIdx.x + blockDim.x + threadIdx.x;
-    int currentOffset = 1 + threadIdx.x;
+    int currentOffset = threadIdx.x;
 
     if (currentOffset >= pencil-1)
+    {
+       return;
+    }
+    else if (currentOffset == 0)
     {
        return;
     }
@@ -108,7 +112,7 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
 
     long numOfThreads = pencil;
     // long numOfBlocks = ceil(pencil/numOfThreads);
-    long numOfBlocks = ceil(grid/(numOfThreads*pencil*pencil); // Unroll on i
+    long numOfBlocks = ceil(grid/(numOfThreads*pencil*pencil)); // Unroll on i
 
     dim3 dimBlock(numOfThreads);
     dim3 dimGrid(numOfBlocks);
