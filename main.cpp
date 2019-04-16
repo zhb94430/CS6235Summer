@@ -83,7 +83,6 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
           double *beta_i, double *beta_j, double *beta_k, double *lambda) 
 {
     int i, j, k, color;
-    double h2inv = 1.0/64;
     double* tmp;
 
     printf("GSRB Starting..\n");
@@ -100,7 +99,7 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
             // if((i+j+k+color) % 2 == 0)
             { // color signifies red or black case
               double helmholtz = alpha[ijk]*phi[ijk]
-                               - h2inv*(
+                               - H2INV*(
                                    beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
                                  - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
                                  + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
@@ -124,7 +123,7 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
             // if((i+j+k+color) % 2 == 0)
             { // color signifies red or black case
               double helmholtz = alpha[ijk]*phi[ijk]
-                               - h2inv*(
+                               - H2INV*(
                                    beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
                                  - beta_i[ijk       ]*( phi[ijk       ]-phi[ijk-1     ] )
                                  + beta_j[ijk+pencil]*( phi[ijk+pencil]-phi[ijk       ] )
