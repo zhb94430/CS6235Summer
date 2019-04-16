@@ -19,7 +19,7 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
                            double* beta_j, double* beta_k, double* lambda, int color)
 {
     int i, j, k;
-    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    i = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (i >= pencil-1 || i == 0)
     {
