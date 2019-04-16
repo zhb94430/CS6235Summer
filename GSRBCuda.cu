@@ -19,20 +19,11 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
                            double* beta_j, double* beta_k, double* lambda, int color)
 {
     int i, j, k;
-    // int currentOffset = 1 + blockIdx.x + blockDim.x + threadIdx.x;
-    int currentOffset = threadIdx.x;
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (currentOffset >= pencil-1)
+    if (i >= pencil-1 || i == 0)
     {
        return;
-    }
-    else if (currentOffset == 0)
-    {
-       return;
-    }
-    else
-    {
-      i = currentOffset;
     }
 
     for (k=1; k<pencil-1; k++)
@@ -145,9 +136,9 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
       cudaDeviceSynchronize();
       cudaCheck(cudaGetLastError());
 
-      tmp = phi_new_device;
-      phi_new_device = phi_device;
-      phi_device = tmp;
+      // tmp = phi_new_device;
+      // phi_new_device = phi_device;
+      // phi_device = tmp;
     }
 
     auto t2 = std::chrono::high_resolution_clock::now();
