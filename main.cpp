@@ -180,14 +180,16 @@ void CompareResults()
         diff_beta_k  = std::abs(cpu_beta_k[i]  - cuda_beta_k[i]);
         diff_lambda  = std::abs(cpu_lambda[i]  - cuda_lambda[i]);
 
-        if ( diff_phi     > threshold ||
-             diff_phi_new > threshold ||
-             diff_rhs     > threshold ||
-             diff_alpha   > threshold ||
-             diff_beta_i  > threshold ||
-             diff_beta_j  > threshold ||
-             diff_beta_k  > threshold ||
-             diff_lambda  > threshold )
+        // if ( diff_phi     > threshold ||
+        //      diff_phi_new > threshold ||
+        //      diff_rhs     > threshold ||
+        //      diff_alpha   > threshold ||
+        //      diff_beta_i  > threshold ||
+        //      diff_beta_j  > threshold ||
+        //      diff_beta_k  > threshold ||
+        //      diff_lambda  > threshold )
+
+        if ( diff_phi_new > threshold)
         {
            // printf("Results does not match at i = %d\n", i);
           unmatched++;
