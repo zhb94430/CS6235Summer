@@ -42,7 +42,7 @@ __global__ void GSRBKernel(double* phi, double* phi_new, double* rhs, double* al
 
             int ijk = i + j*pencil + k*plane;
 
-            if ((i+j+k+color) % 2 == 0)
+            // if ((i+j+k+color) % 2 == 0)
             {
                 double helmholtz = alpha[ijk]*phi[ijk]
                                  - H2INV*(
@@ -128,7 +128,7 @@ void GSRBCuda(double* phi, double* phi_new, double* rhs, double* alpha, double* 
     printf("GSRBCuda Starting..\n");
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    for (int timestep = 0; timestep < 4; timestep++)
+    for (int timestep = 0; timestep < 1; timestep++)
     {
       // Cuda Kernel Call
       GSRBKernel<<<dimGrid, dimBlock>>> (phi_device, phi_new_device, rhs_device, alpha_device, beta_i_device, 

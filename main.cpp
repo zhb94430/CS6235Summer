@@ -89,7 +89,7 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
     printf("GSRB Starting..\n");
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    for (int timestep = 0; timestep < 4; timestep++)
+    for (int timestep = 0; timestep < 1; timestep++)
     {
       color = 0;
 
@@ -97,7 +97,8 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
         for(j=1;j<pencil-1;j++){
           for(i=1;i<pencil-1;i++){
             int ijk = i + j*pencil + k*plane;
-            if((i+j+k+color) % 2 == 0){ // color signifies red or black case
+            // if((i+j+k+color) % 2 == 0)
+            { // color signifies red or black case
               double helmholtz = alpha[ijk]*phi[ijk]
                                - h2inv*(
                                    beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
@@ -120,7 +121,8 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
         for(j=1;j<pencil-1;j++){
           for(i=1;i<pencil-1;i++){
             int ijk = i + j*pencil + k*plane;
-            if((i+j+k+color) % 2 == 0){ // color signifies red or black case
+            // if((i+j+k+color) % 2 == 0)
+            { // color signifies red or black case
               double helmholtz = alpha[ijk]*phi[ijk]
                                - h2inv*(
                                    beta_i[ijk+1     ]*( phi[ijk+1     ]-phi[ijk       ] )
@@ -137,9 +139,9 @@ void GSRB(double *phi, double *phi_new, double *rhs, double *alpha,
         }
       }
 
-      tmp = phi_new;
-      phi_new = phi;
-      phi = tmp;
+      // tmp = phi_new;
+      // phi_new = phi;
+      // phi = tmp;
     }
 
     auto t2 = std::chrono::high_resolution_clock::now();
