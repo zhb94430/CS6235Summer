@@ -5,6 +5,8 @@
 #include <chrono>
 
 #include "./bricklib/inc/brick.h"
+#include "./bricklib/inc/brick-cuda.h"
+
 #include "GSRBConstants.h"
 #include "immintrin.h"
 #include "omp.h"
