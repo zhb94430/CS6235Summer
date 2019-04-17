@@ -557,14 +557,14 @@ int GSRBBricks(double* phi, double* phi_new, double* rhs, double* alpha,
     brickd bricks_beta_k (&binfo);
     brickd bricks_lambda (&binfo);
 
-    bricks_phi.dat = phi;
-    bricks_phi_new.dat = phi_new;
-    bricks_rhs.dat = rhs;
-    bricks_alpha.dat = alpha;
-    bricks_beta_i.dat = beta_i;
-    bricks_beta_j.dat = beta_j;
-    bricks_beta_k.dat = beta_k;
-    bricks_lambda.dat = lambda;
+    bricks_phi.dat = (bElem*)phi;
+    bricks_phi_new.dat = (bElem*)phi_new;
+    bricks_rhs.dat = (bElem*)rhs;
+    bricks_alpha.dat = (bElem*)alpha;
+    bricks_beta_i.dat = (bElem*)beta_i;
+    bricks_beta_j.dat = (bElem*)beta_j;
+    bricks_beta_k.dat = (bElem*)beta_k;
+    bricks_lambda.dat = (bElem*)lambda;
 
     printf("GSRBBricks Starting..\n");
     auto t1 = std::chrono::high_resolution_clock::now();
@@ -585,14 +585,14 @@ int GSRBBricks(double* phi, double* phi_new, double* rhs, double* alpha,
               << fp_ms.count()
               << " milliseconds\n";
 
-    phi = bricks_phi.dat;
-    phi_new = bricks_phi_new.dat;
-    rhs = bricks_rhs.dat;
-    alpha = bricks_alpha.dat;
-    beta_i = bricks_beta_i.dat;
-    beta_j = bricks_beta_j.dat;
-    beta_k = bricks_beta_k.dat;
-    lambda = bricks_lambda.dat;
+    phi = (double*)bricks_phi.dat;
+    phi_new = (double*)bricks_phi_new.dat;
+    rhs = (double*)bricks_rhs.dat;
+    alpha = (double*)bricks_alpha.dat;
+    beta_i = (double*)bricks_beta_i.dat;
+    beta_j = (double*)bricks_beta_j.dat;
+    beta_k = (double*)bricks_beta_k.dat;
+    lambda = (double*)bricks_lambda.dat;
 
     return 1;
 }
