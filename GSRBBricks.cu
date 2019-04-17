@@ -38,7 +38,7 @@ int GSRBBricksCode(brickd& phi, brickd& phi_new, brickd& rhs, brickd& alpha,
 //long b = blist.dat[blockIdx.x];
 // long lid = threadIdx.x & 31;
 
-__global__ void GSRBGenerated(struct ::brickd &phi, struct ::brickd &phi_new, struct ::brickd &rhs, struct ::brickd &alpha, struct ::brickd &beta_i, struct ::brickd &beta_j, struct ::brickd &beta_k, struct ::brickd &lambda, struct ::brick_list &blist) 
+__global__ int GSRBGenerated(struct ::brickd &phi, struct ::brickd &phi_new, struct ::brickd &rhs, struct ::brickd &alpha, struct ::brickd &beta_i, struct ::brickd &beta_j, struct ::brickd &beta_k, struct ::brickd &lambda, struct ::brick_list &blist) 
 {
     long b = blist.dat[blockIdx.x];
     long lid = threadIdx.x & 31;
@@ -541,7 +541,7 @@ __global__ void GSRBGenerated(struct ::brickd &phi, struct ::brickd &phi_new, st
 
 
 int GSRBBricks(double* phi, double* phi_new, double* rhs, double* alpha,
-               double* beta_i, double* beta_j, double* beta_k, double* lambda);
+               double* beta_i, double* beta_j, double* beta_k, double* lambda)
 {
     brick_info binfo(BDIM_Z, BDIM_Y, BDIM_X);
   // Create bricks according to the mapping
