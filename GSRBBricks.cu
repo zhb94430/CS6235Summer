@@ -535,7 +535,7 @@ __global__ void GSRBGenerated(struct ::brickd &phi, struct ::brickd &phi_new, st
           }
         }
       }
-      return 1;
+      return;
 }
 
 
