@@ -8,6 +8,7 @@ find_package(CUDA  REQUIRED)
 
 include_directories("${CUDA_INCLUDE_DIRS}")
 include_directories("bricklib/inc")
+include_directories("bricklib/src")
 
 add_library(GSRBCuda GSRBCuda.cu GSRBCuda.h)
 target_compile_features(GSRBCuda PUBLIC cxx_std_11)
