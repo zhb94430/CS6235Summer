@@ -24,5 +24,6 @@ add_executable(main main.cpp)
 
 set_property(TARGET main 
              PROPERTY CUDA_SEPARABLE_COMPILATION ON)
+target_link_libraries(main brickcore brickcuda)
 target_link_libraries(main PRIVATE GSRBCuda)
 target_link_libraries(main PRIVATE GSRBBricks)
