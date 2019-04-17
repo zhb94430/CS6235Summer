@@ -4,6 +4,9 @@ project(BRICKSCUDA LANGUAGES CXX CUDA)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_BUILD_TYPE Debug)
 
+find_package(CUDA  REQUIRED)
+
+include_directories("${CUDA_INCLUDE_DIRS}")
 include_directories("bricklib/inc")
 
 add_library(GSRBCuda GSRBCuda.cu GSRBCuda.h)
