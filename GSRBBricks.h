@@ -2,6 +2,7 @@
 #define GSRBBRICKS_H
 
 #include <stdio.h>
+#include <iostream>
 #include <chrono>
 
 #include "./bricklib/inc/brick.h"
