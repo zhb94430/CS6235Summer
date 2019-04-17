@@ -195,7 +195,38 @@ void CompareResults()
         }
     }
 
-    printf("%d results not matched\n", unmatched);
+    printf("CUDA result have %d unmatched\n", unmatched);
+
+    unmatched = 0;
+
+    for (int i = 0; i < grid; i++)
+    {
+        diff_phi     = std::abs(cpu_phi[i]     - bricks_phi[i]);
+        diff_phi_new = std::abs(cpu_phi_new[i] - bricks_phi_new[i]);
+        diff_rhs     = std::abs(cpu_rhs[i]     - bricks_rhs[i]);
+        diff_alpha   = std::abs(cpu_alpha[i]   - bricks_alpha[i]);
+        diff_beta_i  = std::abs(cpu_beta_i[i]  - bricks_beta_i[i]);
+        diff_beta_j  = std::abs(cpu_beta_j[i]  - bricks_beta_j[i]);
+        diff_beta_k  = std::abs(cpu_beta_k[i]  - bricks_beta_k[i]);
+        diff_lambda  = std::abs(cpu_lambda[i]  - bricks_lambda[i]);
+
+        // if ( diff_phi     > threshold ||
+        //      diff_phi_new > threshold ||
+        //      diff_rhs     > threshold ||
+        //      diff_alpha   > threshold ||
+        //      diff_beta_i  > threshold ||
+        //      diff_beta_j  > threshold ||
+        //      diff_beta_k  > threshold ||
+        //      diff_lambda  > threshold )
+
+        if ( diff_phi_new > threshold)
+        {
+           // printf("Results does not match at i = %d\n", i);
+          unmatched++;
+        }
+    }
+
+    printf("Bricks result have %d unmatched\n", unmatched);
 }
 
 void InitBufferWithSize(int size)
