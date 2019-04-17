@@ -38,7 +38,7 @@ int GSRBBricksCode(brickd& phi, brickd& phi_new, brickd& rhs, brickd& alpha,
 //long b = blist.dat[blockIdx.x];
 // long lid = threadIdx.x & 31;
 
-__global__ int GSRBGenerated(struct ::brickd &phi, struct ::brickd &phi_new, struct ::brickd &rhs, struct ::brickd &alpha, struct ::brickd &beta_i, struct ::brickd &beta_j, struct ::brickd &beta_k, struct ::brickd &lambda, struct ::brick_list &blist) 
+__global__ void GSRBGenerated(struct ::brickd &phi, struct ::brickd &phi_new, struct ::brickd &rhs, struct ::brickd &alpha, struct ::brickd &beta_i, struct ::brickd &beta_j, struct ::brickd &beta_k, struct ::brickd &lambda, struct ::brick_list &blist) 
 {
     long b = blist.dat[blockIdx.x];
     long lid = threadIdx.x & 31;
