@@ -1,0 +1,30 @@
+OPT=--compiler-options -fopenmp -DTILEK=8 -DTILEJ=8 -DTILEI=8 -O2
+CUOPT=-arch=sm_60 -Xptxas -dlcm=ca -Xptxas -dscm=cs
+CC=nvcc
+SUPPORT=$(wildcard ../../common/*.cpp)
+SUPPORTCU=$(wildcard ../../common/*.cu)
+BVEC=\"CUDA\"
+BFOLD=4\\,8"
+INC=-I../../common -I../../schedules/$(DIM)d -DBVEC=$(BVEC) -DBFOLD=$(BFOLD) -DN=$(N)
+
+all:ref brick
+
+ref:setup.cu
+	$(CC) $(OPT) $(CUOPT) $(INC) $(EXOPT) $(SCHEDULE) -o $@ $^ $(SUPPORT) $(SUPPORTCU)
+
+brick:setup-brick.cu
+	$(CC) $(OPT) $(CUOPT) $(INC) $(EXOPT) $(SCHEDULE) -DTYPE=1 -o $@ $^ $(SUPPORT) $(SUPPORTCU)
+
+setup-brick.cu:setup.cu
+	VSCPP=$(CC) vecscatter $^ $@ $(VSOPT) -- -E $(OPT) $(INC) $(EXOPT) -DTYPE=1
+
+run:all
+	@./ref
+	@./brick
+
+clean:
+	-rm ref
+	-rm brick
+	-rm setup-brick.cu
+
+.PHONY:run clean

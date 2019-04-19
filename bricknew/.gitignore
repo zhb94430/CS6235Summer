@@ -1,0 +1,18 @@
+# vim
+*.swp
+
+# binary
+
+brick
+ref
+vstile
+
+# python
+
+__pycache__
+
+# generated files
+
+setup-brick.cpp
+setup-vstile.cpp
+setup-brick.cu

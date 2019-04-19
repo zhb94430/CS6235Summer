@@ -1,0 +1,36 @@
+OPT=-qopenmp -xCORE-AVX512 -qopt-zmm-usage=high
+CC=icpc
+SUPPORT=$(wildcard ../../common/*.cpp)
+BVEC=\"AVX512\"
+INC=-I../../common -I../../schedules/$(DIM)d -DTVEC=\"FLEX\" -DBVEC=$(BVEC) -DBFOLD=$(BFOLD) -DN=$(N)
+
+all:ref vstile brick
+
+ref:setup.cpp
+	$(CC) $(OPT) $(INC) $(EXOPT) $(SCHEDULE) -o $@ $^ $(SUPPORT)
+
+vstile:setup-vstile.cpp
+	$(CC) $(OPT) $(INC) $(EXOPT) $(SCHEDULE) -DTYPE=1 -o $@ $^ $(SUPPORT)
+
+brick:setup-brick.cpp
+	$(CC) $(OPT) $(INC) $(EXOPT) $(SCHEDULE) -DTYPE=2 -o $@ $^ $(SUPPORT)
+
+setup-vstile.cpp:setup.cpp
+	vecscatter $^ $@ $(VSOPT) -- $(OPT) $(INC) $(EXOPT) -DTYPE=1
+
+setup-brick.cpp:setup.cpp
+	vecscatter $^ $@ $(VSOPT) -- $(OPT) $(INC) $(EXOPT) -DTYPE=2
+
+run:all
+	@./ref
+	@./vstile
+	@./brick
+
+clean:
+	-rm ref
+	-rm vstile
+	-rm brick
+	-rm setup-vstile.cpp
+	-rm setup-brick.cpp
+
+.PHONY:run clean
