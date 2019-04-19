@@ -118,8 +118,6 @@ int main() {
 
     // CUDA
     {
-        cudaFuncSetCacheConfig(arr_kernel, cudaFuncCachePreferL1);
-
         auto compute = [&]() -> void {
             long numOfThreads = STRIDE;
             // long numOfBlocks = ceil(STRIDE/numOfThreads);
@@ -137,7 +135,7 @@ int main() {
         copyFromDevice({STRIDE, STRIDE, STRIDE}, phi_new_cuda, phi_new_dev);
 
         if (!compareArray({STRIDE, STRIDE, STRIDE}, (bElem *)phi_new_arr, (bElem *)phi_new_cuda))
-            return 1;
+            std::cout << "arr don't match" << std::endl;
     }
 
     cudaDeviceSynchronize();
@@ -195,8 +193,6 @@ int main() {
             cudaMemcpy(bStorage_dev, &_bStorage_dev, size, cudaMemcpyHostToDevice);
         }
 
-        cudaFuncSetCacheConfig(brick_kernel, cudaFuncCachePreferL1);
-
         auto compute = [&]() -> void {
             Brick3D phi(bInfo_dev, &_bStorage_dev, 0);
             Brick3D alpha(bInfo_dev, &_bStorage_dev, bSize);
@@ -229,7 +225,7 @@ int main() {
         cudaMemcpy(bStorage.dat, _bStorage_dev.dat, bStorage.chunks * bStorage.step * sizeof(bElem), cudaMemcpyDeviceToHost);
 
         if (!compareBrick<3>({STRIDE, STRIDE, STRIDE}, phi_new_arr, grid_ptr, phi_new_bri))
-            return 1;
+            std::cout << "brick don't match" << std::endl;
     }
     return 0;
 }
