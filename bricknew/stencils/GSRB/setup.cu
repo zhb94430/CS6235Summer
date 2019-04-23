@@ -1,3 +1,5 @@
+#include <chrono>
+
 #include "brick-cuda.h"
 #include "head.h"
 #include "headcu.h"
@@ -92,6 +94,8 @@ int main() {
 
     // CPU
     {
+        printf("CPU Starting..\n");
+        auto t1 = std::chrono::high_resolution_clock::now();
 
         for(int k=GZ;k<STRIDE-GZ;k++){
             for(int j=GZ;j<STRIDE-GZ;j++){
@@ -114,6 +118,13 @@ int main() {
                 }
             }
         }
+
+        auto t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
+
+        std::cout << "CPU Time is "
+                  << fp_ms.count()
+                  << " milliseconds\n";
     }
 
     // CUDA
@@ -130,12 +141,27 @@ int main() {
                                          beta_j_dev , beta_k_dev , lambda_dev, 0);
         };
         
+        printf("CUDA Starting..\n");
+        auto t1 = std::chrono::high_resolution_clock::now();
+
         compute();
+
+        auto t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
+
+        std::cout << "CUDA Time is "
+                  << fp_ms.count()
+                  << " milliseconds\n";
+
         auto phi_new_cuda = zeroArray({STRIDE, STRIDE, STRIDE});
         copyFromDevice({STRIDE, STRIDE, STRIDE}, phi_new_cuda, phi_new_dev);
 
         if (!compareArray({STRIDE, STRIDE, STRIDE}, (bElem *)phi_new_arr, (bElem *)phi_new_cuda))
-            std::cout << "arr don't match" << std::endl;
+            {std::cout << "CUDA failed to match" << std::endl;}
+        else
+        {
+            std::cout << "CUDA Match" << std::endl;
+        }
     }
 
     cudaDeviceSynchronize();
@@ -219,14 +245,28 @@ int main() {
             brick_kernel<<< block, thread >>>(grid, phi, alpha, beta_i, beta_j, beta_k, phi_new, lambda, rhs);
         };
 
+        printf("Brick Starting..\n");
+        auto t1 = std::chrono::high_resolution_clock::now();
+
         compute();
+
+        auto t2 = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double, std::milli> fp_ms = t2 - t1;
+
+        std::cout << "Brick Time is "
+                  << fp_ms.count()
+                  << " milliseconds\n";
 
         cudaDeviceSynchronize();
 
         cudaMemcpy(bStorage.dat, _bStorage_dev.dat, bStorage.chunks * bStorage.step * sizeof(bElem), cudaMemcpyDeviceToHost);
 
         if (!compareBrick<3>({STRIDE, STRIDE, STRIDE}, phi_new_arr, grid_ptr, phi_new_bri))
-            std::cout << "brick don't match" << std::endl;
+            {std::cout << "brick failed to match" << std::endl;}
+        else
+        {
+            std::cout << "Brick Match" << std::endl;
+        }
     }
     return 0;
 }
