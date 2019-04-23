@@ -931,6 +931,7 @@ int main() {
         copyBrick<3>({STRIDE, STRIDE, STRIDE}, beta_i_arr, grid_ptr, beta_i_bri);
         copyBrick<3>({STRIDE, STRIDE, STRIDE}, beta_j_arr, grid_ptr, beta_j_bri);
         copyBrick<3>({STRIDE, STRIDE, STRIDE}, beta_k_arr, grid_ptr, beta_k_bri);
+        copyBrick<3>({STRIDE, STRIDE, STRIDE}, phi_new_arr, grid_ptr, phi_new_bri);
         copyBrick<3>({STRIDE, STRIDE, STRIDE}, lambda_arr, grid_ptr, lambda_bri);
         copyBrick<3>({STRIDE, STRIDE, STRIDE}, rhs_arr, grid_ptr, rhs_bri);
 
@@ -949,8 +950,8 @@ int main() {
             Brick3D beta_j(bInfo_dev, &_bStorage_dev, bSize * 3);
             Brick3D beta_k(bInfo_dev, &_bStorage_dev, bSize * 4);
             Brick3D phi_new(bInfo_dev, &_bStorage_dev, bSize * 5);
-            Brick3D lambda(&bInfo, &bStorage, bSize * 6);
-            Brick3D rhs(&bInfo, &bStorage, bSize * 7);
+            Brick3D lambda(bInfo_dev, &bStorage, bSize * 6);
+            Brick3D rhs(bInfo_dev, &bStorage, bSize * 7);
            
             phi.bStorage = bStorage_dev;
             alpha.bStorage = bStorage_dev;

@@ -1,5 +1,5 @@
 OPT=--compiler-options -fopenmp -DTILEK=8 -DTILEJ=8 -DTILEI=8 -O2
-CUOPT=-arch=sm_60 -Xptxas -dlcm=ca -Xptxas -dscm=cs
+CUOPT=-arch=sm_35 -Xptxas -dlcm=ca -Xptxas -dscm=cs -lineinfo
 CC=nvcc
 SUPPORT=$(wildcard ../../common/*.cpp)
 SUPPORTCU=$(wildcard ../../common/*.cu)
