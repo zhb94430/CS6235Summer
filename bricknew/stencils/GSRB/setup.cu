@@ -92,6 +92,8 @@ int main() {
     bElem *lambda_dev;
     copyToDevice({STRIDE, STRIDE, STRIDE}, lambda_dev, lambda_arr);
 
+    printf("Problem Size: %d x 3\n", STRIDE-GZ-GZ);
+
     // CPU
     {
         printf("CPU Starting..\n");
