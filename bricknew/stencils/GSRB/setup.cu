@@ -92,7 +92,7 @@ int main() {
     bElem *lambda_dev;
     copyToDevice({STRIDE, STRIDE, STRIDE}, lambda_dev, lambda_arr);
 
-    printf("Problem Size: %d x 3\n", STRIDE-GZ-GZ);
+    printf("Problem Size: %d ^ 3\n", STRIDE-GZ-GZ);
 
     // CPU
     {
